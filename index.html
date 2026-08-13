@@ -1,60 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
 
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Photocard AR Test</title>
 
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
     <style>
 
-        html,
         body {
-
             margin: 0;
-            width: 100%;
-            height: 100%;
-
-            overflow: hidden;
-
-            background: black;
         }
 
-        #ar-container {
-
-            width: 100%;
-            height: 100%;
-        }
-
-        #start-button {
-
-            position: absolute;
-
-            z-index: 10;
-
-            left: 50%;
+        #start {
+            position: fixed;
+            z-index: 100;
             top: 50%;
-
-            transform:
-                translate(-50%, -50%);
+            left: 50%;
+            transform: translate(-50%, -50%);
 
             padding: 16px 28px;
 
             font-size: 18px;
 
             border: none;
-
-            border-radius: 12px;
+            border-radius: 10px;
 
             background: white;
-
-            color: black;
         }
 
     </style>
@@ -65,115 +42,87 @@
 <body>
 
 
-<div id="ar-container"></div>
-
-
-<button id="start-button">
+<button id="start">
     START AR
 </button>
 
 
-<script type="module">
+<a-scene
+    mindar-image="
+        imageTargetSrc: ./targets.mind;
+        autoStart: false;
+    "
 
-    import * as THREE
-        from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+    color-space="sRGB"
+
+    renderer="
+        colorManagement: true;
+        physicallyCorrectLights: true;
+    "
+
+    vr-mode-ui="enabled: false"
+
+    device-orientation-permission-ui="enabled: false"
+
+    embedded
+>
 
 
-    import {
-        MindARThree
+    <a-camera
+        position="0 0 0"
+        look-controls="enabled: false"
+        cursor="fuse: false; rayOrigin: mouse;"
+    >
+    </a-camera>
+
+
+    <a-entity
+        mindar-image-target="targetIndex: 0"
+    >
+
+        <a-box
+            position="0 0 0"
+            rotation="0 0 0"
+            color="red"
+            animation="
+                property: rotation;
+                to: 360 360 360;
+                loop: true;
+                dur: 3000;
+                easing: linear;
+            "
+        >
+        </a-box>
+
+    </a-entity>
+
+
+</a-scene>
+
+
+<script>
+
+const startButton =
+    document.getElementById("start");
+
+
+const scene =
+    document.querySelector("a-scene");
+
+
+startButton.addEventListener(
+    "click",
+    async function () {
+
+        startButton.style.display = "none";
+
+        const mindarSystem =
+            scene.systems["mindar-image"];
+
+        await mindarSystem.start();
+
     }
-        from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js";
-
-
-    const startButton =
-        document.getElementById(
-            "start-button"
-        );
-
-
-    startButton.addEventListener(
-        "click",
-        async () => {
-
-
-            startButton.style.display =
-                "none";
-
-
-            const mindarThree =
-                new MindARThree({
-
-                    container:
-                        document.querySelector(
-                            "#ar-container"
-                        ),
-
-                    imageTargetSrc:
-                        "./targets.mind",
-
-                    maxTrack: 1
-
-                });
-
-
-            const {
-                renderer,
-                scene,
-                camera
-            } = mindarThree;
-
-
-            const anchor =
-                mindarThree.addAnchor(0);
-
-
-            const geometry =
-                new THREE.BoxGeometry(
-                    0.3,
-                    0.3,
-                    0.3
-                );
-
-
-            const material =
-                new THREE.MeshNormalMaterial();
-
-
-            const cube =
-                new THREE.Mesh(
-                    geometry,
-                    material
-                );
-
-
-            anchor.group.add(cube);
-
-
-            await mindarThree.start();
-
-
-            renderer.setAnimationLoop(
-                () => {
-
-
-                    cube.rotation.x +=
-                        0.01;
-
-
-                    cube.rotation.y +=
-                        0.01;
-
-
-                    renderer.render(
-                        scene,
-                        camera
-                    );
-
-                }
-            );
-
-        }
-    );
+);
 
 </script>
 

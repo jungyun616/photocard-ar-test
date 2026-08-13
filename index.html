@@ -3,37 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Photocard AR Test</title>
 
+    <!-- MindAR -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
+
+    <!-- Three.js -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+        }
+    }
+    </script>
+
     <style>
-        body {
+        html, body {
             margin: 0;
-            background: #111;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: black;
         }
 
-        .container {
-            padding: 40px 20px;
+        #ar-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
 
-        h1 {
-            font-size: 28px;
-        }
+        #start-button {
+            position: absolute;
+            z-index: 10;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
 
-        p {
-            color: #aaa;
+            padding: 16px 28px;
+            font-size: 18px;
+
+            border: none;
+            border-radius: 12px;
+
+            background: white;
+            color: black;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <h1>Photocard AR Test</h1>
-        <p>My first WebAR project</p>
-    </div>
+<div id="ar-container"></div>
+
+<button id="start-button">
+    START AR
+</button>
+
+<script type="module">
+
+import * as THREE from "three";
+
+const startButton = document.getElementById("start-button");
+
+startButton.addEventListener("click", async () => {
+
+    startButton.style.display = "none";
+
+    const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+        container: document.querySelector("#ar-container"),
+
+        imageTargetSrc: "./targets.mind",
+
+        maxTrack: 1
+    });
+
+    const { renderer, scene, camera } = mindarThree;
+
+    const anchor = mindarThree.addAnchor(0);
+
+    const geometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+
+    const material = new THREE.MeshBasicMaterial({
+        color: 0xffffff
+    });
+
+    const cube = new THREE.Mesh(
+        geometry,
+        material
+    );
+
+    anchor.group.add(cube);
+
+    await mindarThree.start();
+
+    renderer.setAnimationLoop(() => {
+
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+
+        renderer.render(
+            scene,
+            camera
+        );
+
+    });
+
+});
+
+</script>
 
 </body>
 </html>

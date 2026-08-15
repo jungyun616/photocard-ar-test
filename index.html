@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Photocard AR Test</title>
 
@@ -16,14 +16,7 @@
 <body>
 
 <a-scene
-    mindar-image="
-        imageTargetSrc: ./targets.mind;
-    "
-    color-space="sRGB"
-    renderer="
-        colorManagement: true;
-        physicallyCorrectLights: true;
-    "
+    mindar-image="imageTargetSrc: ./targets.mind;"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
 >
@@ -38,24 +31,14 @@
         mindar-image-target="targetIndex: 0"
     >
 
-        <!-- TEST TEXT -->
-        <a-text
-            value="MODEL TEST"
-            position="0 0.3 0"
-            color="white"
-            align="center"
-            width="2"
-        ></a-text>
-
-
-        <!-- GLB MODEL -->
-        <a-gltf-model
-            id="model"
-            src="./model.glb"
-            position="0 0 0.1"
-            scale="0.1 0.1 0.1"
+        <a-plane
+            color="red"
+            opacity="0.5"
+            position="0 0 0"
+            height="0.552"
+            width="1"
             rotation="0 0 0"
-        ></a-gltf-model>
+        ></a-plane>
 
     </a-entity>
 

@@ -1,56 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Photocard AR Test</title>
 
+
+    <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
+
+    <!-- MindAR -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
 </head>
 
+
 <body>
 
 <a-scene
-    mindar-image="imageTargetSrc: ./targets.mind;"
+
+    mindar-image="
+        imageTargetSrc: ./targets.mind;
+    "
+
     vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
+
+    device-orientation-permission-ui="
+        enabled: false
+    "
+
 >
 
+
+    <!-- CAMERA -->
+
     <a-camera
+
         position="0 0 0"
-        look-controls="enabled: false"
+
+        look-controls="
+            enabled: false
+        "
+
     ></a-camera>
 
 
+    <!-- PHOTO CARD IMAGE TARGET -->
+
     <a-entity
-        mindar-image-target="targetIndex: 0"
+
+        mindar-image-target="
+            targetIndex: 0
+        "
+
     >
 
-        <a-entity
-    mindar-image-target="targetIndex: 0"
->
 
-    <a-text
-        value="MODEL TEST"
-        position="0 0.3 0"
-        color="white"
-        align="center"
-        width="2"
-    ></a-text>
+        <!-- TEST TEXT -->
 
-    <a-gltf-model
-        src="./model.glb"
-        position="0 0 0"
-        scale="1 1 1"
-        rotation="0 0 0"
-    ></a-gltf-model>
+        <a-text
 
-</a-entity>
+            value="MODEL TEST"
+
+            position="
+                0
+                0.3
+                0
+            "
+
+            color="white"
+
+            align="center"
+
+            width="2"
+
+        ></a-text>
+
+
+        <!-- 3D MODEL -->
+
+        <a-gltf-model
+
+            src="./model.glb"
+
+            position="
+                0
+                0
+                0
+            "
+
+            scale="
+                1
+                1
+                1
+            "
+
+            rotation="
+                0
+                0
+                0
+            "
+
+        ></a-gltf-model>
+
+
+    </a-entity>
+
 
 </a-scene>
 

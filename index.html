@@ -25,6 +25,7 @@
 
 <body>
 
+
 <a-scene
 
     mindar-image="
@@ -53,7 +54,7 @@
     ></a-camera>
 
 
-    <!-- PHOTO CARD IMAGE TARGET -->
+    <!-- IMAGE TARGET -->
 
     <a-entity
 
@@ -64,37 +65,239 @@
     >
 
 
-
         <!-- 3D MODEL -->
 
         <a-gltf-model
-    src="./model.glb"
 
-    position="
-        0
-        0
-        0
-    "
+            id="character"
 
-    scale="
-        0.1
-        0.1
-        0.1
-    "
+            src="./model.glb"
 
-    rotation="
-        0
-        0
-        0
-    "
+            position="
+                0
+                0
+                0
+            "
 
-></a-gltf-model>
+            scale="
+                0.1
+                0.1
+                0.1
+            "
+
+            rotation="
+                0
+                0
+                0
+            "
+
+        ></a-gltf-model>
 
 
     </a-entity>
 
 
 </a-scene>
+
+
+<script>
+
+
+const character =
+    document.querySelector(
+        "#character"
+    );
+
+
+/*
+====================================
+WHEN GLB IS LOADED
+====================================
+*/
+
+character.addEventListener(
+    "model-loaded",
+    function () {
+
+        console.log(
+            "GLB LOADED"
+        );
+
+
+        const model =
+            character.getObject3D(
+                "mesh"
+            );
+
+
+        if (!model) {
+
+            console.error(
+                "MODEL OBJECT NOT FOUND"
+            );
+
+            return;
+
+        }
+
+
+        /*
+        ================================
+        FIND ANIMATIONS
+        ================================
+        */
+
+        const animations =
+            model.animations;
+
+
+        console.log(
+            "ANIMATIONS:",
+            animations
+        );
+
+
+        if (
+            !animations ||
+            animations.length === 0
+        ) {
+
+            console.log(
+                "NO ANIMATION FOUND"
+            );
+
+            return;
+
+        }
+
+
+        /*
+        ================================
+        CREATE ANIMATION MIXER
+        ================================
+        */
+
+        const mixer =
+            new THREE.AnimationMixer(
+                model
+            );
+
+
+        /*
+        ================================
+        PLAY FIRST ANIMATION
+        ================================
+        */
+
+        const action =
+            mixer.clipAction(
+                animations[0]
+            );
+
+
+        action.play();
+
+
+        /*
+        ================================
+        LOOP ANIMATION
+        ================================
+        */
+
+        action.setLoop(
+            THREE.LoopRepeat,
+            Infinity
+        );
+
+
+        /*
+        ================================
+        UPDATE MIXER
+        ================================
+        */
+
+        let previousTime =
+            performance.now();
+
+
+        function animate() {
+
+            const currentTime =
+                performance.now();
+
+
+            const delta =
+                (
+                    currentTime -
+                    previousTime
+                ) / 1000;
+
+
+            previousTime =
+                currentTime;
+
+
+            mixer.update(
+                delta
+            );
+
+
+            requestAnimationFrame(
+                animate
+            );
+
+        }
+
+
+        animate();
+
+
+        console.log(
+            "ANIMATION STARTED"
+        );
+
+    }
+);
+
+
+/*
+====================================
+TARGET FOUND
+====================================
+*/
+
+const target =
+    document.querySelector(
+        "[mindar-image-target]"
+    );
+
+
+target.addEventListener(
+    "targetFound",
+    function () {
+
+        console.log(
+            "TARGET FOUND"
+        );
+
+    }
+);
+
+
+target.addEventListener(
+    "targetLost",
+    function () {
+
+        console.log(
+            "TARGET LOST"
+        );
+
+    }
+);
+
+
+</script>
+
 
 </body>
 

@@ -30,12 +30,10 @@
 
     mindar-image="
         imageTargetSrc: ./targets.mind;
-    "
-
-    vr-mode-ui="enabled: false"
-
-    device-orientation-permission-ui="
-        enabled: false
+        filterMinCF: 0.0001;
+        filterBeta: 0.01;
+        missTolerance: 5;
+        warmupTolerance: 5;
     "
 
 >

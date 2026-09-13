@@ -1,94 +1,307 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photocard AR Test</title>
 
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
-
-    <script>
-        AFRAME.registerComponent('smooth-follow', {
-            schema: {
-                target: { type: 'selector' },
-                amount: { type: 'number', default: 0.2 }
-            },
-
-            init: function () {
-                this.currentPos = new THREE.Vector3();
-                this.currentQuat = new THREE.Quaternion();
-                this.initialized = false;
-            },
-
-            tick: function () {
-                const targetObj = this.data.target.object3D;
-                const myObj = this.el.object3D;
-
-                const targetPos = new THREE.Vector3();
-                const targetQuat = new THREE.Quaternion();
-                const targetScale = new THREE.Vector3();
-
-                targetObj.matrixWorld.decompose(targetPos, targetQuat, targetScale);
-
-                if (!this.initialized) {
-                    this.currentPos.copy(targetPos);
-                    this.currentQuat.copy(targetQuat);
-                    this.initialized = true;
-                }
-
-                this.currentPos.lerp(targetPos, this.data.amount);
-                this.currentQuat.slerp(targetQuat, this.data.amount);
-
-                myObj.position.copy(this.currentPos);
-                myObj.quaternion.copy(this.currentQuat);
-            }
-        });
-    </script>
-</head>
-
-<body style="margin: 0; overflow: hidden;">
-
-    <a-scene
-        mindar-image="
-            imageTargetSrc: ./targets.mind;
-            filterMinCF: 0.0005;
-            filterBeta: 100;
-            missTolerance: 5;
-            warmupTolerance: 5;
-        "
-        color-space="sRGB"
-        vr-mode-ui="enabled: false"
-        device-orientation-permission-ui="enabled: false"
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
     >
 
-        <a-assets>
-            <a-asset-item id="avatarModel" src="./model.glb"></a-asset-item>
-        </a-assets>
+    <title>Photocard AR Test</title>
 
-        <a-entity light="type: ambient; intensity: 0.8;"></a-entity>
-        <a-entity light="type: directional; intensity: 0.6;" position="0 1 1"></a-entity>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-        <a-entity id="anchor" mindar-image-target="targetIndex: 0"></a-entity>
 
-        <a-entity
+    <!-- MindAR -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+</head>
+
+
+<body>
+
+
+<a-scene
+
+    mindar-image="
+        imageTargetSrc: ./targets.mind;
+        filterMinCF: 0.0005;
+        filterBeta: 100;
+        missTolerance: 5;
+        warmupTolerance: 5;
+    "
+
+    vr-mode-ui="enabled: false"
+
+    device-orientation-permission-ui="
+        enabled: false
+    "
+
+>
+
+
+    <!-- CAMERA -->
+
+    <a-camera
+
+        position="0 0 0"
+
+        look-controls="
+            enabled: false
+        "
+
+    ></a-camera>
+
+
+    <!-- IMAGE TARGET -->
+
+    <a-entity
+
+        mindar-image-target="
+            targetIndex: 0
+        "
+
+    >
+
+
+        <!-- 3D MODEL -->
+
+        <a-gltf-model
+
             id="character"
-            smooth-follow="target: #anchor; amount: 0.2"
-        >
-            <a-entity
-                gltf-model="#avatarModel"
-                position="0 -0.2 0"
-                scale="0.25 0.25 0.25"
-                rotation="0 0 0"
-                animation-mixer="clip: Animation; loop: repeat;"
-            ></a-entity>
-        </a-entity>
 
-    </a-scene>
+            src="./model.glb"
+
+            position="
+                0
+                0
+                0
+            "
+
+            scale="
+                0.1
+                0.1
+                0.1
+            "
+
+            rotation="
+                0
+                0
+                0
+            "
+
+        ></a-gltf-model>
+
+
+    </a-entity>
+
+
+</a-scene>
+
+
+<script>
+
+
+const character =
+    document.querySelector(
+        "#character"
+    );
+
+
+/*
+====================================
+WHEN GLB IS LOADED
+====================================
+*/
+
+character.addEventListener(
+    "model-loaded",
+    function () {
+
+        console.log(
+            "GLB LOADED"
+        );
+
+
+        const model =
+            character.getObject3D(
+                "mesh"
+            );
+
+
+        if (!model) {
+
+            console.error(
+                "MODEL OBJECT NOT FOUND"
+            );
+
+            return;
+
+        }
+
+
+        /*
+        ================================
+        FIND ANIMATIONS
+        ================================
+        */
+
+        const animations =
+            model.animations;
+
+
+        console.log(
+            "ANIMATIONS:",
+            animations
+        );
+
+
+        if (
+            !animations ||
+            animations.length === 0
+        ) {
+
+            console.log(
+                "NO ANIMATION FOUND"
+            );
+
+            return;
+
+        }
+
+
+        /*
+        ================================
+        CREATE ANIMATION MIXER
+        ================================
+        */
+
+        const mixer =
+            new THREE.AnimationMixer(
+                model
+            );
+
+
+        /*
+        ================================
+        PLAY FIRST ANIMATION
+        ================================
+        */
+
+        const action =
+            mixer.clipAction(
+                animations[0]
+            );
+
+
+        action.play();
+
+
+        /*
+        ================================
+        LOOP ANIMATION
+        ================================
+        */
+
+        action.setLoop(
+            THREE.LoopRepeat,
+            Infinity
+        );
+
+
+        /*
+        ================================
+        UPDATE MIXER
+        ================================
+        */
+
+        let previousTime =
+            performance.now();
+
+
+        function animate() {
+
+            const currentTime =
+                performance.now();
+
+
+            const delta =
+                (
+                    currentTime -
+                    previousTime
+                ) / 1000;
+
+
+            previousTime =
+                currentTime;
+
+
+            mixer.update(
+                delta
+            );
+
+
+            requestAnimationFrame(
+                animate
+            );
+
+        }
+
+
+        animate();
+
+
+        console.log(
+            "ANIMATION STARTED"
+        );
+
+    }
+);
+
+
+/*
+====================================
+TARGET FOUND
+====================================
+*/
+
+const target =
+    document.querySelector(
+        "[mindar-image-target]"
+    );
+
+
+target.addEventListener(
+    "targetFound",
+    function () {
+
+        console.log(
+            "TARGET FOUND"
+        );
+
+    }
+);
+
+
+target.addEventListener(
+    "targetLost",
+    function () {
+
+        console.log(
+            "TARGET LOST"
+        );
+
+    }
+);
+
+
+</script>
+
 
 </body>
 

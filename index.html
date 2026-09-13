@@ -1,312 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR Photocard</title>
+  
+  <!-- A-Frame & MindAR -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  
+  <!-- GLB 애니메이션 재생 컴포넌트 -->
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
 
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Photocard AR Test</title>
-
-
-    <!-- A-Frame -->
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
-
-    <!-- MindAR -->
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
+  <!-- 머티리얼 깊이 보정 스크립트 -->
+  <script>
+    AFRAME.registerComponent('fix-material', {
+      init: function () {
+        this.el.addEventListener('model-loaded', () => {
+          const mesh = this.el.getObject3D('mesh');
+          if (!mesh) return;
+          mesh.traverse((node) => {
+            if (node.isMesh && node.material) {
+              node.material.depthWrite = true;
+              node.material.alphaTest = 0.5;
+              node.material.needsUpdate = true;
+            }
+          });
+        });
+      }
+    });
+  </script>
 </head>
+<body style="margin: 0; overflow: hidden;">
 
-
-<body>
-
-<!-- 캐시 확인용: 이 숫자가 안 바뀌면 새 코드가 안 불러와진 거야 -->
-<div style="position: fixed; top: 8px; left: 8px; z-index: 9999; background: red; color: white; font-size: 20px; padding: 4px 8px;">
-    TEST-VERSION-3
-</div>
-
-<a-scene
-
+  <a-scene
     mindar-image="
-        imageTargetSrc: ./targets.mind;
-        filterMinCF: 0.001;
-        filterBeta: 20;
-        missTolerance: 5;
-        warmupTolerance: 5;
+      imageTargetSrc: ./targets.mind;
+      autoStart: true;
+      uiLoading: yes;
+      uiScanning: yes;
+      filterMinCF: 0.00001;
+      filterBeta: 0.0001;
+      missTolerance: 10;
+      warmupTolerance: 5;
     "
-
+    color-space="sRGB"
+    renderer="colorManagement: true; physicallyCorrectLights: true;"
     vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+  >
+    <a-assets>
+      <a-asset-item id="avatarModel" src="./model.glb"></a-asset-item>
+    </a-assets>
 
-    device-orientation-permission-ui="
-        enabled: false
-    "
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
->
-
-
-    <!-- CAMERA -->
-
-    <a-camera
-
-        position="0 0 0"
-
-        look-controls="
-            enabled: false
-        "
-
-    ></a-camera>
-
-
-    <!-- IMAGE TARGET -->
-
-    <a-entity
-
-        mindar-image-target="
-            targetIndex: 0
-        "
-
-    >
-
-
-        <!-- 3D MODEL -->
-
-        <a-gltf-model
-
-            id="character"
-
-            src="./model.glb"
-
-            position="
-                0
-                0
-                0
-            "
-
-            scale="
-                0.1
-                0.1
-                0.1
-            "
-
-            rotation="
-                0
-                0
-                0
-            "
-
-        ></a-gltf-model>
-
-
+    <!-- 포토카드 타겟 -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-entity
+        id="model"
+        gltf-model="#avatarModel"
+        position="0 -0.2 0"
+        scale="0.35 0.35 0.35"
+        rotation="0 0 0"
+        animation-mixer="clip: Animation; loop: repeat;"
+        fix-material
+      ></a-entity>
     </a-entity>
-
-
-</a-scene>
-
-
-<script>
-
-
-const character =
-    document.querySelector(
-        "#character"
-    );
-
-
-/*
-====================================
-WHEN GLB IS LOADED
-====================================
-*/
-
-character.addEventListener(
-    "model-loaded",
-    function () {
-
-        console.log(
-            "GLB LOADED"
-        );
-
-
-        const model =
-            character.getObject3D(
-                "mesh"
-            );
-
-
-        if (!model) {
-
-            console.error(
-                "MODEL OBJECT NOT FOUND"
-            );
-
-            return;
-
-        }
-
-
-        /*
-        ================================
-        FIND ANIMATIONS
-        ================================
-        */
-
-        const animations =
-            model.animations;
-
-
-        console.log(
-            "ANIMATIONS:",
-            animations
-        );
-
-
-        if (
-            !animations ||
-            animations.length === 0
-        ) {
-
-            console.log(
-                "NO ANIMATION FOUND"
-            );
-
-            return;
-
-        }
-
-
-        /*
-        ================================
-        CREATE ANIMATION MIXER
-        ================================
-        */
-
-        const mixer =
-            new THREE.AnimationMixer(
-                model
-            );
-
-
-        /*
-        ================================
-        PLAY FIRST ANIMATION
-        ================================
-        */
-
-        const action =
-            mixer.clipAction(
-                animations[0]
-            );
-
-
-        action.play();
-
-
-        /*
-        ================================
-        LOOP ANIMATION
-        ================================
-        */
-
-        action.setLoop(
-            THREE.LoopRepeat,
-            Infinity
-        );
-
-
-        /*
-        ================================
-        UPDATE MIXER
-        ================================
-        */
-
-        let previousTime =
-            performance.now();
-
-
-        function animate() {
-
-            const currentTime =
-                performance.now();
-
-
-            const delta =
-                (
-                    currentTime -
-                    previousTime
-                ) / 1000;
-
-
-            previousTime =
-                currentTime;
-
-
-            mixer.update(
-                delta
-            );
-
-
-            requestAnimationFrame(
-                animate
-            );
-
-        }
-
-
-        animate();
-
-
-        console.log(
-            "ANIMATION STARTED"
-        );
-
-    }
-);
-
-
-/*
-====================================
-TARGET FOUND
-====================================
-*/
-
-const target =
-    document.querySelector(
-        "[mindar-image-target]"
-    );
-
-
-target.addEventListener(
-    "targetFound",
-    function () {
-
-        console.log(
-            "TARGET FOUND"
-        );
-
-    }
-);
-
-
-target.addEventListener(
-    "targetLost",
-    function () {
-
-        console.log(
-            "TARGET LOST"
-        );
-
-    }
-);
-
-
-</script>
-
+  </a-scene>
 
 </body>
-
 </html>

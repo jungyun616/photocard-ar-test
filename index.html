@@ -1,34 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>AR Photocard</title>
+
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
+
   <!-- MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
 
   <!-- GLB animation -->
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
 
+
   <!-- Material fix -->
   <script>
+
     AFRAME.registerComponent('fix-material', {
+
       init: function () {
+
         this.el.addEventListener('model-loaded', () => {
 
           const mesh = this.el.getObject3D('mesh');
 
           if (!mesh) return;
 
+
           mesh.traverse((node) => {
 
             if (node.isMesh && node.material) {
 
               node.material.depthWrite = true;
+
               node.material.alphaTest = 0.5;
+
               node.material.needsUpdate = true;
 
             }
@@ -36,83 +48,6 @@
           });
 
         });
-      }
-    });
-
-
-    /*
-    ==========================================
-    KEEP CHARACTER ROTATION FIXED
-    ==========================================
-    */
-
-    AFRAME.registerComponent('fixed-world-rotation', {
-
-      init: function () {
-
-        this.initialWorldQuaternion = null;
-
-        this.el.addEventListener('model-loaded', () => {
-
-          const object = this.el.object3D;
-
-          if (!object) return;
-
-          /*
-          현재 캐릭터의 처음 방향을 저장
-          */
-
-          object.updateMatrixWorld(true);
-
-          this.initialWorldQuaternion =
-            object.getWorldQuaternion(
-              new THREE.Quaternion()
-            );
-
-        });
-
-      },
-
-
-      tick: function () {
-
-        if (!this.initialWorldQuaternion) return;
-
-        const object = this.el.object3D;
-
-        if (!object) return;
-
-        /*
-        MindAR 부모가 회전시키더라도
-        캐릭터의 World Rotation을 처음 방향으로 유지
-        */
-
-        object.quaternion.copy(
-          this.initialWorldQuaternion
-        );
-
-        /*
-        부모의 회전 때문에 다시 영향을 받지 않도록
-        월드 기준 회전을 강제로 유지
-        */
-
-        if (object.parent) {
-
-          const parentWorldQuaternion =
-            object.parent.getWorldQuaternion(
-              new THREE.Quaternion()
-            );
-
-          const inverseParentQuaternion =
-            parentWorldQuaternion.clone().invert();
-
-          object.quaternion.copy(
-            inverseParentQuaternion.multiply(
-              this.initialWorldQuaternion
-            )
-          );
-
-        }
 
       }
 
@@ -125,18 +60,24 @@
 
 <body style="margin: 0; overflow: hidden;">
 
+
   <a-scene
 
     mindar-image="
       imageTargetSrc: ./targets.mind;
+
       autoStart: true;
+
       uiLoading: yes;
+
       uiScanning: yes;
 
       filterMinCF: 0.00001;
+
       filterBeta: 0.0001;
 
       missTolerance: 10;
+
       warmupTolerance: 5;
     "
 
@@ -154,14 +95,17 @@
   >
 
 
+    <!-- ASSETS -->
+
     <a-assets>
 
       <a-asset-item
         id="avatarModel"
-        src="./model.glb"
-      ></a-asset-item>
+        src="./model.glb">
+      </a-asset-item>
 
     </a-assets>
+
 
 
     <!-- CAMERA -->
@@ -170,11 +114,10 @@
 
       position="0 0 0"
 
-      look-controls="
-        enabled: false
-      "
+      look-controls="enabled: false"
 
     ></a-camera>
+
 
 
     <!-- IMAGE TARGET -->
@@ -204,8 +147,6 @@
         "
 
         fix-material
-
-        fixed-world-rotation
 
       ></a-entity>
 

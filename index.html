@@ -25,12 +25,16 @@
 
 <body>
 
+<!-- 캐시 확인용: 이 숫자가 안 바뀌면 새 코드가 안 불러와진 거야 -->
+<div style="position: fixed; top: 8px; left: 8px; z-index: 9999; background: red; color: white; font-size: 20px; padding: 4px 8px;">
+    TEST-VERSION-3
+</div>
 
 <a-scene
 
     mindar-image="
         imageTargetSrc: ./targets.mind;
-        filterMinCF: 0.00001;
+        filterMinCF: 0.001;
         filterBeta: 20;
         missTolerance: 5;
         warmupTolerance: 5;

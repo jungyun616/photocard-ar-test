@@ -3,69 +3,216 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AR Photocard</title>
-  
-  <!-- A-Frame & MindAR -->
+
+  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-  
-  <!-- GLB 애니메이션 재생 컴포넌트 -->
+
+  <!-- GLB animation -->
   <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
 
-  <!-- 머티리얼 깊이 보정 스크립트 -->
+  <!-- Material fix -->
   <script>
     AFRAME.registerComponent('fix-material', {
       init: function () {
         this.el.addEventListener('model-loaded', () => {
+
           const mesh = this.el.getObject3D('mesh');
+
           if (!mesh) return;
+
           mesh.traverse((node) => {
+
             if (node.isMesh && node.material) {
+
               node.material.depthWrite = true;
               node.material.alphaTest = 0.5;
               node.material.needsUpdate = true;
+
             }
+
           });
+
         });
       }
     });
+
+
+    /*
+    ==========================================
+    KEEP CHARACTER ROTATION FIXED
+    ==========================================
+    */
+
+    AFRAME.registerComponent('fixed-world-rotation', {
+
+      init: function () {
+
+        this.initialWorldQuaternion = null;
+
+        this.el.addEventListener('model-loaded', () => {
+
+          const object = this.el.object3D;
+
+          if (!object) return;
+
+          /*
+          현재 캐릭터의 처음 방향을 저장
+          */
+
+          object.updateMatrixWorld(true);
+
+          this.initialWorldQuaternion =
+            object.getWorldQuaternion(
+              new THREE.Quaternion()
+            );
+
+        });
+
+      },
+
+
+      tick: function () {
+
+        if (!this.initialWorldQuaternion) return;
+
+        const object = this.el.object3D;
+
+        if (!object) return;
+
+        /*
+        MindAR 부모가 회전시키더라도
+        캐릭터의 World Rotation을 처음 방향으로 유지
+        */
+
+        object.quaternion.copy(
+          this.initialWorldQuaternion
+        );
+
+        /*
+        부모의 회전 때문에 다시 영향을 받지 않도록
+        월드 기준 회전을 강제로 유지
+        */
+
+        if (object.parent) {
+
+          const parentWorldQuaternion =
+            object.parent.getWorldQuaternion(
+              new THREE.Quaternion()
+            );
+
+          const inverseParentQuaternion =
+            parentWorldQuaternion.clone().invert();
+
+          object.quaternion.copy(
+            inverseParentQuaternion.multiply(
+              this.initialWorldQuaternion
+            )
+          );
+
+        }
+
+      }
+
+    });
+
   </script>
+
 </head>
+
+
 <body style="margin: 0; overflow: hidden;">
 
   <a-scene
+
     mindar-image="
       imageTargetSrc: ./targets.mind;
       autoStart: true;
       uiLoading: yes;
       uiScanning: yes;
+
       filterMinCF: 0.00001;
       filterBeta: 0.0001;
+
       missTolerance: 10;
       warmupTolerance: 5;
     "
+
     color-space="sRGB"
-    renderer="colorManagement: true; physicallyCorrectLights: true;"
+
+    renderer="
+      colorManagement: true;
+      physicallyCorrectLights: true;
+    "
+
     vr-mode-ui="enabled: false"
+
     device-orientation-permission-ui="enabled: false"
+
   >
+
+
     <a-assets>
-      <a-asset-item id="avatarModel" src="./model.glb"></a-asset-item>
+
+      <a-asset-item
+        id="avatarModel"
+        src="./model.glb"
+      ></a-asset-item>
+
     </a-assets>
 
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- 포토카드 타겟 -->
-    <a-entity mindar-image-target="targetIndex: 0">
+    <!-- CAMERA -->
+
+    <a-camera
+
+      position="0 0 0"
+
+      look-controls="
+        enabled: false
+      "
+
+    ></a-camera>
+
+
+    <!-- IMAGE TARGET -->
+
+    <a-entity
+      mindar-image-target="targetIndex: 0"
+    >
+
+
+      <!-- CHARACTER -->
+
       <a-entity
+
         id="model"
+
         gltf-model="#avatarModel"
+
         position="0 -0.2 0"
+
         scale="0.35 0.35 0.35"
+
         rotation="0 0 0"
-        animation-mixer="clip: Animation; loop: repeat;"
+
+        animation-mixer="
+          clip: Animation;
+          loop: repeat;
+        "
+
         fix-material
+
+        fixed-world-rotation
+
       ></a-entity>
+
+
     </a-entity>
+
+
   </a-scene>
 
 </body>
